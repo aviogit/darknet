@@ -12,6 +12,8 @@
 #include <fstream>
 #include <algorithm>
 
+#include <boost/filesystem.hpp>
+
 #include <opencv2/core/version.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/opencv.hpp>
@@ -851,7 +853,7 @@ void save_cv_jpg(mat_cv *img_src, const char *name)
 // ====================================================================
 // Draw Detection
 // ====================================================================
-void draw_detections_cv_v3(mat_cv* mat, detection *dets, int num, float thresh, char **names, image **alphabet, int classes, int ext_output)
+void draw_detections_cv_v3(mat_cv* mat, detection *dets, int num, float thresh, char **names, image **alphabet, int classes, int ext_output, const char* out_dir)
 {
  bool verbose = false;
     try {
@@ -860,6 +862,11 @@ void draw_detections_cv_v3(mat_cv* mat, detection *dets, int num, float thresh, 
         if (!show_img) return;
         static int frame_id = 0;
         frame_id++;
+
+
+	if (frame_id == 1)
+	        printf("Creating directory: %s\n", out_dir);
+        boost::filesystem::create_directory(out_dir);
 
 
 
@@ -969,13 +976,12 @@ void draw_detections_cv_v3(mat_cv* mat, detection *dets, int num, float thresh, 
 		if (!strcmp(names[class_id], "dog"))
 		{
 
-                // you should create directory: result_img
                 static int img_id = 0;
                 img_id++;
                 char image_name[1024];
                 //sprintf(image_name, "result_img/img-%06d-%06d-%03d-%s.jpg", frame_id, img_id, class_id, names[class_id]);
                 CvRect rect = cvRect(pt1.x, pt1.y, pt2.x - pt1.x - 1, pt2.y - pt1.y - 1);
-                sprintf(image_name, "result_img/img-%06d-%s-%04d-%04d-%04d-%04d.jpg", frame_id, names[class_id], rect.x, rect.y, rect.width, rect.height);
+                sprintf(image_name, "%s/img-%06d-%s-%04d-%04d-%04d-%04d.jpg", out_dir, frame_id, names[class_id], rect.x, rect.y, rect.width, rect.height);
             	printf(" --- Saved image: %s - rect: %d - %d - %d - %d", image_name, rect.x, rect.y, rect.width, rect.height);
 
 		cv::Rect roi = rect;
@@ -1000,7 +1006,7 @@ void draw_detections_cv_v3(mat_cv* mat, detection *dets, int num, float thresh, 
                 //cvSaveImage(image_name, copy_img, 0);
                 //cvResetImageROI(copy_img);
 
-		const int JPEG_QUALITY = 90;
+		const int JPEG_QUALITY = 95;
 		
 		std::vector<int> params;
 		params.push_back(CV_IMWRITE_JPEG_QUALITY);

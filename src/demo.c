@@ -14,7 +14,6 @@
 #include <sys/time.h>
 #endif
 
-
 #ifdef OPENCV
 
 #include "http_stream.h"
@@ -126,9 +125,12 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
     calculate_binary_weights(net);
     srand(2222222);
 
+    char out_dir[1024];
     if(filename){
         printf("video file: %s\n", filename);
         cap = get_capture_video_stream(filename);
+	//std::string out_dir = std::string(filename) + "-images";
+        sprintf(out_dir, "%s-images", filename);
     }else{
         printf("Webcam index: %d\n", cam_index);
         cap = get_capture_webcam(cam_index);
@@ -226,7 +228,7 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
                 send_json(local_dets, local_nboxes, l.classes, demo_names, frame_id, demo_json_port, timeout);
             }
 
-            draw_detections_cv_v3(show_img, local_dets, local_nboxes, demo_thresh, demo_names, demo_alphabet, demo_classes, demo_ext_output);
+            draw_detections_cv_v3(show_img, local_dets, local_nboxes, demo_thresh, demo_names, demo_alphabet, demo_classes, demo_ext_output, out_dir);
             free_detections(local_dets, local_nboxes);
 
             printf("\nFPS:%.1f\n", fps);

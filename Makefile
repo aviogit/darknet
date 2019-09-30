@@ -71,7 +71,7 @@ CC=gcc
 CPP=g++
 NVCC=nvcc
 OPTS=-Ofast
-LDFLAGS= -lm -pthread
+LDFLAGS= -lm -pthread -lboost_filesystem -lboost_system
 COMMON= -Iinclude/ -I3rdparty/stb/include
 CFLAGS=-Wall -Wfatal-errors -Wno-unused-result -Wno-unknown-pragmas -fPIC
 
