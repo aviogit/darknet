@@ -853,12 +853,31 @@ void save_cv_jpg(mat_cv *img_src, const char *name)
 // ====================================================================
 void draw_detections_cv_v3(mat_cv* mat, detection *dets, int num, float thresh, char **names, image **alphabet, int classes, int ext_output)
 {
+ bool verbose = false;
     try {
         cv::Mat *show_img = mat;
         int i, j;
         if (!show_img) return;
         static int frame_id = 0;
         frame_id++;
+
+
+
+                static int copied_frame_id = -1;
+                //static IplImage* copy_img = NULL;
+                //static cv::Mat* copy_img_tmp = NULL;
+		cv::Mat cloned_img;
+                if (copied_frame_id != frame_id) {
+                    copied_frame_id = frame_id;
+			if (verbose)
+	            	    printf("Copying image with size: %d x %d - depth: %d - channels: %d\n", show_img->size().width, show_img->size().height, show_img->depth(), show_img->channels());
+                    //if(copy_img == NULL) copy_img = cvCreateImage(show_img->size(), IPL_DEPTH_8U, show_img->channels());
+                    //if(copy_img == NULL) copy_img_tmp = new cv::Mat(show_img->size(), show_img->type());
+		    //copy_img = new IplImage(*copy_img_tmp);
+                    //cvCopy(show_img, copy_img, 0);
+		    cloned_img = show_img->clone(); 
+                }
+
 
         for (i = 0; i < num; ++i) {
             char labelstr[4096] = { 0 };
@@ -946,22 +965,73 @@ void draw_detections_cv_v3(mat_cv* mat, detection *dets, int num, float thresh, 
                 color.val[1] = green * 256;
                 color.val[2] = blue * 256;
 
+            	//printf(" --- %d - %c - %c - %c", strlen(names[class_id]), names[class_id][0], names[class_id][1], names[class_id][2]);
+		if (!strcmp(names[class_id], "dog"))
+		{
+
                 // you should create directory: result_img
-                //static int copied_frame_id = -1;
-                //static IplImage* copy_img = NULL;
-                //if (copied_frame_id != frame_id) {
-                //    copied_frame_id = frame_id;
-                //    if(copy_img == NULL) copy_img = cvCreateImage(cvSize(show_img->width, show_img->height), show_img->depth, show_img->nChannels);
-                //    cvCopy(show_img, copy_img, 0);
-                //}
-                //static int img_id = 0;
-                //img_id++;
-                //char image_name[1024];
-                //sprintf(image_name, "result_img/img_%d_%d_%d_%s.jpg", frame_id, img_id, class_id, names[class_id]);
-                //CvRect rect = cvRect(pt1.x, pt1.y, pt2.x - pt1.x, pt2.y - pt1.y);
+                static int img_id = 0;
+                img_id++;
+                char image_name[1024];
+                sprintf(image_name, "result_img/img-%06d-%06d-%03d-%s.jpg", frame_id, img_id, class_id, names[class_id]);
+                CvRect rect = cvRect(pt1.x, pt1.y, pt2.x - pt1.x - 1, pt2.y - pt1.y - 1);
+            	printf(" --- Saved image: %s - rect: %d - %d - %d - %d", image_name, rect.x, rect.y, rect.width, rect.height);
+
+		cv::Rect roi = rect;
+		cv::Mat m = cloned_img;
+
+
+		if (verbose)
+		{
+			// OpenCV Error: Assertion failed (0 <= roi.x && 0 <= roi.width && roi.x + roi.width <= m.cols && 0 <= roi.y && 0 <= roi.height && roi.y + roi.height <= m.rows)
+			// printf("------------------------ OpenCV Error: Assertion failed (0 <= roi.x && 0 <= roi.width && roi.x + roi.width <= m.cols && 0 <= roi.y && 0 <= roi.height && roi.y + roi.height <= m.rows)\n");
+			printf("------------------------ OpenCV Error: Assertion failed (0 <= %d && 0 <= %d && %d <= %d && 0 <= %d && 0 <= %d && %d <= %d)\n", roi.x, roi.width, roi.x + roi.width, m.cols, roi.y, roi.height, roi.y + roi.height, m.rows);
+		}
+
+		//Point a cv::Mat header at it (no allocation is done)
+		cv::Mat image_roi = cloned_img(rect);
+		if (verbose)
+		{
+			printf("------------------------ ROI OK");
+		}
+
                 //cvSetImageROI(copy_img, rect);
                 //cvSaveImage(image_name, copy_img, 0);
                 //cvResetImageROI(copy_img);
+
+		const int JPEG_QUALITY = 99;
+		
+		std::vector<int> params;
+		params.push_back(CV_IMWRITE_JPEG_QUALITY);
+		params.push_back(JPEG_QUALITY);
+		
+		cv::imwrite(image_name, image_roi, params);
+		}
+
+
+#if 0
+            // you should create directory: result_img
+            static int copied_frame_id = -1;
+            static image copy_img;
+            if (copied_frame_id != frame_id) {
+                copied_frame_id = frame_id;
+                if (copy_img.data) free_image(copy_img);
+                copy_img = copy_image(im);
+            }
+            image cropped_im = crop_image(copy_img, left, top, right - left, bot - top);
+            static int img_id = 0;
+            img_id++;
+            char image_name[1024];
+            int best_class_id = selected_detections[i].best_class;
+            sprintf(image_name, "result_img/img_%d_%d_%d_%s.jpg", frame_id, img_id, best_class_id, names[best_class_id]);
+            printf("Saving image: %s\n", image_name);
+            save_image(cropped_im, image_name);
+            free_image(cropped_im);
+#endif
+
+
+
+
 
                 cv::rectangle(*show_img, pt1, pt2, color, width, 8, 0);
                 if (ext_output)

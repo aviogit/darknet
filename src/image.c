@@ -335,6 +335,7 @@ void draw_detections_v3(image im, detection *dets, int num, float thresh, char *
 
     // image output
     qsort(selected_detections, selected_detections_num, sizeof(*selected_detections), compare_by_probs);
+    //printf("selected_detections_num: %d\n", selected_detections_num);
     for (i = 0; i < selected_detections_num; ++i) {
             int width = im.h * .006;
             if (width < 1)
@@ -372,6 +373,10 @@ void draw_detections_v3(image im, detection *dets, int num, float thresh, char *
             if (top < 0) top = 0;
             if (bot > im.h - 1) bot = im.h - 1;
 
+		// Print bounding box values 
+		//printf("Bounding Box: Left=%d, Top=%d, Right=%d, Bottom=%d\n", left, top, right, bot); 
+		//draw_box_width(im, left, top, right, bot, width, red, green, blue);
+
             //int b_x_center = (left + right) / 2;
             //int b_y_center = (top + bot) / 2;
             //int b_width = right - left;
@@ -379,21 +384,22 @@ void draw_detections_v3(image im, detection *dets, int num, float thresh, char *
             //sprintf(labelstr, "%d x %d - w: %d, h: %d", b_x_center, b_y_center, b_width, b_height);
 
             // you should create directory: result_img
-            //static int copied_frame_id = -1;
-            //static image copy_img;
-            //if (copied_frame_id != frame_id) {
-            //    copied_frame_id = frame_id;
-            //    if (copy_img.data) free_image(copy_img);
-            //    copy_img = copy_image(im);
-            //}
-            //image cropped_im = crop_image(copy_img, left, top, right - left, bot - top);
-            //static int img_id = 0;
-            //img_id++;
-            //char image_name[1024];
-            //int best_class_id = selected_detections[i].best_class;
-            //sprintf(image_name, "result_img/img_%d_%d_%d_%s.jpg", frame_id, img_id, best_class_id, names[best_class_id]);
-            //save_image(cropped_im, image_name);
-            //free_image(cropped_im);
+            static int copied_frame_id = -1;
+            static image copy_img;
+            if (copied_frame_id != frame_id) {
+                copied_frame_id = frame_id;
+                if (copy_img.data) free_image(copy_img);
+                copy_img = copy_image(im);
+            }
+            image cropped_im = crop_image(copy_img, left, top, right - left, bot - top);
+            static int img_id = 0;
+            img_id++;
+            char image_name[1024];
+            int best_class_id = selected_detections[i].best_class;
+            sprintf(image_name, "result_img/img_%d_%d_%d_%s.jpg", frame_id, img_id, best_class_id, names[best_class_id]);
+            printf("Saving image: %s\n", image_name);
+            save_image(cropped_im, image_name);
+            free_image(cropped_im);
 
             if (im.c == 1) {
                 draw_box_width_bw(im, left, top, right, bot, width, 0.8);    // 1 channel Black-White
