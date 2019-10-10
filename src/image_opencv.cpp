@@ -886,23 +886,29 @@ void draw_detections_cv_v3(mat_cv* mat, detection *dets, int num, float thresh, 
                 }
 
 
-        for (i = 0; i < num; ++i) {
+        for (i = 0; i < num; ++i)
+	{
             char labelstr[4096] = { 0 };
             int class_id = -1;
+	    int prob = -1;
             for (j = 0; j < classes; ++j) {
                 int show = strncmp(names[j], "dont_show", 9);
-                if (dets[i].prob[j] > thresh && show) {
-                    if (class_id < 0) {
+                if (dets[i].prob[j] > thresh && show)
+		{
+                    if (class_id < 0)
+		    {
                         strcat(labelstr, names[j]);
                         class_id = j;
                         char buff[10];
                         sprintf(buff, " (%2.0f%%)", dets[i].prob[j] * 100);
                         strcat(labelstr, buff);
                     }
-                    else {
+                    else
+		    {
                         strcat(labelstr, ", ");
                         strcat(labelstr, names[j]);
                     }
+		    prob = dets[i].prob[j] * 100;
                     printf("%s: %.0f%% ", names[j], dets[i].prob[j] * 100);
                 }
             }
@@ -981,7 +987,7 @@ void draw_detections_cv_v3(mat_cv* mat, detection *dets, int num, float thresh, 
                 char image_name[1024];
                 //sprintf(image_name, "result_img/img-%06d-%06d-%03d-%s.jpg", frame_id, img_id, class_id, names[class_id]);
                 CvRect rect = cvRect(pt1.x, pt1.y, pt2.x - pt1.x - 1, pt2.y - pt1.y - 1);
-                sprintf(image_name, "%s/img-%06d-%s-%04d-%04d-%04d-%04d.jpg", out_dir, frame_id, names[class_id], rect.x, rect.y, rect.width, rect.height);
+                sprintf(image_name, "%s/img-%06d-%s-%03d-%04d-%04d-%04d-%04d.jpg", out_dir, frame_id, names[class_id], prob, rect.x, rect.y, rect.width, rect.height);
             	printf(" --- Saved image: %s - rect: %d - %d - %d - %d", image_name, rect.x, rect.y, rect.width, rect.height);
 
 		cv::Rect roi = rect;
