@@ -125,13 +125,13 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
     calculate_binary_weights(net);
     srand(2222222);
 
-    char out_dir[1024];
+    //char out_dir[1024];
     if(filename)
     {
         printf("video file: %s\n", filename);
         cap = get_capture_video_stream(filename);
 	//std::string out_dir = std::string(filename) + "-images";
-        sprintf(out_dir, "%s-images", filename);
+        //sprintf(out_dir, "%s-images", filename);
     }
     else
     {
@@ -231,7 +231,7 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
                 send_json(local_dets, local_nboxes, l.classes, demo_names, frame_id, demo_json_port, timeout);
             }
 
-            draw_detections_cv_v3(show_img, local_dets, local_nboxes, demo_thresh, demo_names, demo_alphabet, demo_classes, demo_ext_output, out_dir);
+            draw_detections_cv_v3(show_img, local_dets, local_nboxes, demo_thresh, demo_names, demo_alphabet, demo_classes, demo_ext_output, save_info);
             free_detections(local_dets, local_nboxes);
 
             printf("\nFPS:%.1f\n", fps);

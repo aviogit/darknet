@@ -17,7 +17,7 @@ typedef struct write_cv write_cv;
 
 struct save_info_
 {
-	const char* out_dir;
+	const char out_dir[2048];
 	const char** saved_classes;
 	int n_saved_classes;
 	int min_prob_to_save;		// 0 -> 99
