@@ -1497,8 +1497,14 @@ void run_detector(int argc, char **argv)
         if (filename)
             if (strlen(filename) > 0)
                 if (filename[strlen(filename) - 1] == 0x0d) filename[strlen(filename) - 1] = 0;
+
+        struct save_info_ save_info;
+	save_info.min_prob_to_save		= find_int_arg(argc, argv, "-min_prob_to_save", 0);
+	char *saved_classes_str_with_commas	= find_char_arg(argc, argv, "-saved_classes", 0);
+	save_info.saved_classes			= split_string(saved_classes_str_with_commas, ',');
+
         demo(cfg, weights, thresh, hier_thresh, cam_index, filename, names, classes, frame_skip, prefix, out_filename,
-            mjpeg_port, json_port, dont_show, ext_output, letter_box);
+            mjpeg_port, json_port, dont_show, ext_output, letter_box, &save_info);
 
         free_list_contents_kvp(options);
         free_list(options);
