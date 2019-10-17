@@ -15,6 +15,15 @@ typedef struct mat_cv mat_cv;
 typedef struct cap_cv cap_cv;
 typedef struct write_cv write_cv;
 
+struct save_info_
+{
+	const char* out_dir;
+	const char** saved_classes;
+	int n_saved_classes;
+	int min_prob_to_save;		// 0 -> 99
+};
+
+
 // cv::Mat
 mat_cv *load_image_mat_cv(const char *filename, int flag);
 image load_image_cv(char *filename, int channels);
@@ -85,7 +94,7 @@ void save_cv_png(mat_cv *img, const char *name);
 void save_cv_jpg(mat_cv *img, const char *name);
 
 // Draw Detection
-void draw_detections_cv_v3(mat_cv* show_img, detection *dets, int num, float thresh, char **names, image **alphabet, int classes, int ext_output, const char* out_dir);
+void draw_detections_cv_v3(mat_cv* show_img, detection *dets, int num, float thresh, char **names, image **alphabet, int classes, int ext_output, struct save_info_ *save_info);
 
 // Draw Loss & Accuracy chart
 mat_cv* draw_train_chart(float max_img_loss, int max_batches, int number_of_lines, int img_size, int dont_show);

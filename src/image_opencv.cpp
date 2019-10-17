@@ -936,7 +936,7 @@ extern "C" {
 // ====================================================================
 // Draw Detection
 // ====================================================================
-	void draw_detections_cv_v3 (mat_cv* mat, detection *dets, int num, float thresh, char **names, image **alphabet, int classes, int ext_output, const char* out_dir)
+	void draw_detections_cv_v3 (mat_cv* mat, detection *dets, int num, float thresh, char **names, image **alphabet, int classes, int ext_output, struct save_info_ *save_info)
 	{
 		bool verbose = false;
 		try
@@ -947,9 +947,17 @@ extern "C" {
 			static int frame_id = 0;
 			frame_id++;
 
-			if (frame_id == 1)
-				printf ("Creating directory: %s\n", out_dir);
-			boost::filesystem::create_directory (out_dir);
+
+			bool save_images = false;
+			if (save_info)
+				save_images = true;
+
+			if (save_info && save_info->out_dir && strlen (save_info->out_dir) != 0)
+			{
+				if (frame_id == 1)
+					printf ("Creating directory: %s\n", save_info->out_dir);
+				boost::filesystem::create_directory (save_info->out_dir);
+			}
 
 
 			static int copied_frame_id = -1;
@@ -1042,49 +1050,59 @@ extern "C" {
 					color.val[1] = green * 256;
 					color.val[2] = blue * 256;
 
-					if (!strcmp (names[class_id], "dog"))
+					if (save_info)
 					{
-
-						static int img_id = 0;
-						img_id++;
-						char image_name[1024];
-						CvRect rect = cvRect (pt1.x, pt1.y, pt2.x - pt1.x - 1, pt2.y - pt1.y - 1);
-						sprintf (image_name, "%s/img-%06d-%s-%03d-%04d-%04d-%04d-%04d.jpg", out_dir, frame_id, names[class_id], prob, rect.x, rect.y, rect.width, rect.height);
-						printf (" --- Saved image: %s - rect: %d - %d - %d - %d", image_name, rect.x, rect.y, rect.width, rect.height);
-
-						cv::Rect roi = rect;
-						cv::Mat m = cloned_img;
-
-
-						if (verbose)
-						{	// Let's keep this for the next time we'll try something new
-							// and the usual assert will pop out...
-							// ---------------------------------------------------------
-							// OpenCV Error: Assertion failed
-							// (0 <= roi.x && 0 <= roi.width && roi.x + roi.width <=
-							// m.cols && 0 <= roi.y && 0 <= roi.height && roi.y + roi.height <= m.rows)
-							// printf("------------------------ OpenCV Error: Assertion failed
-							// (0 <= roi.x && 0 <= roi.width && roi.x + roi.width <=
-							// m.cols && 0 <= roi.y && 0 <= roi.height && roi.y + roi.height <= m.rows)\n");
-							printf ("------------------------ OpenCV Error: Assertion failed "					\
-								"(0 <= %d && 0 <= %d && %d <= %d && 0 <= %d && 0 <= %d && %d <= %d)\n"				\
-								, roi.x, roi.width, roi.x + roi.width, m.cols, roi.y, roi.height, roi.y + roi.height, m.rows);
-						}
-
-						// Point a cv::Mat header at it (no allocation is done)
-						cv::Mat image_roi = cloned_img (rect);
-						if (verbose)
+						for (int idx = 0 ; idx < save_info->n_saved_classes ; idx++)
 						{
-							printf ("------------------------ ROI OK");
+							std::string current_class (names[class_id]);
+							std::string current_class_to_save = save_info->saved_classes[idx];
+							//if (!strcmp (names[class_id], "dog"))
+							if (current_class == current_class_to_save && prob >= save_info->min_prob_to_save)
+							{
+
+								static int img_id = 0;
+								img_id++;
+								char image_name[1024];
+								CvRect rect = cvRect (pt1.x, pt1.y, pt2.x - pt1.x - 1, pt2.y - pt1.y - 1);
+								sprintf (image_name, "%s/img-%06d-%s-%03d-%04d-%04d-%04d-%04d.jpg", save_info->out_dir, frame_id, names[class_id], prob, rect.x, rect.y, rect.width, rect.height);
+								printf (" --- Saved image: %s - rect: %d - %d - %d - %d", image_name, rect.x, rect.y, rect.width, rect.height);
+
+								cv::Rect roi = rect;
+								cv::Mat m = cloned_img;
+
+
+								if (verbose)
+								{
+									// Let's keep this for the next time we'll try something new
+									// and the usual assert will pop out...
+									// ---------------------------------------------------------
+									// OpenCV Error: Assertion failed
+									// (0 <= roi.x && 0 <= roi.width && roi.x + roi.width <=
+									// m.cols && 0 <= roi.y && 0 <= roi.height && roi.y + roi.height <= m.rows)
+									// printf("------------------------ OpenCV Error: Assertion failed
+									// (0 <= roi.x && 0 <= roi.width && roi.x + roi.width <=
+									// m.cols && 0 <= roi.y && 0 <= roi.height && roi.y + roi.height <= m.rows)\n");
+									printf ("------------------------ OpenCV Error: Assertion failed "					\
+									        "(0 <= %d && 0 <= %d && %d <= %d && 0 <= %d && 0 <= %d && %d <= %d)\n"				\
+									        , roi.x, roi.width, roi.x + roi.width, m.cols, roi.y, roi.height, roi.y + roi.height, m.rows);
+								}
+
+								// Point a cv::Mat header at it (no allocation is done)
+								cv::Mat image_roi = cloned_img (rect);
+								if (verbose)
+								{
+									printf ("------------------------ ROI OK");
+								}
+
+								const int JPEG_QUALITY = 95;
+
+								std::vector<int> params;
+								params.push_back (CV_IMWRITE_JPEG_QUALITY);
+								params.push_back (JPEG_QUALITY);
+
+								cv::imwrite (image_name, image_roi, params);
+							}
 						}
-
-						const int JPEG_QUALITY = 95;
-
-						std::vector<int> params;
-						params.push_back (CV_IMWRITE_JPEG_QUALITY);
-						params.push_back (JPEG_QUALITY);
-
-						cv::imwrite (image_name, image_roi, params);
 					}
 
 
