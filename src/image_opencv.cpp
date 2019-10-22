@@ -961,7 +961,7 @@ std::string to_string_with_precision(const float val, const int n = 6)
 			if (save_info)
 				save_images = true;
 
-			if (save_info && save_info->out_dir && strlen (save_info->out_dir) != 0)
+			if (save_info && save_info->out_dir && strlen (save_info->out_dir) != 0 && save_info->n_saved_classes != 0)
 			{
 				if (frame_id == 1)
 					printf ("Creating directory: %s\n", save_info->out_dir);
