@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -103,6 +104,14 @@ extern "C" {
 //    cv::Mat ipl_to_mat(IplImage *ipl);
 //    IplImage *mat_to_ipl(cv::Mat mat);
 
+
+std::string to_string_with_precision(const float val, const int n = 6)
+{
+    std::ostringstream out;
+    out.precision(n);
+    out << std::fixed << val;
+    return out.str();
+}
 
 	mat_cv *load_image_mat_cv (const char *filename, int flag)
 	{
@@ -446,7 +455,7 @@ extern "C" {
 			else
 			{
 				cv::resizeWindow (name, w, h);
-				if (strcmp (name, "Demo") == 0) cv::moveWindow (name, 0, 0);
+				if (strcmp (name, "YOLOv3 Demo") == 0) cv::moveWindow (name, 0, 0);
 			}
 		}
 		catch (...)
@@ -936,7 +945,7 @@ extern "C" {
 // ====================================================================
 // Draw Detection
 // ====================================================================
-	void draw_detections_cv_v3 (mat_cv* mat, detection *dets, int num, float thresh, char **names, image **alphabet, int classes, int ext_output, struct save_info_ *save_info)
+	void draw_detections_cv_v3 (mat_cv* mat, detection *dets, int num, float thresh, char **names, image **alphabet, int classes, int ext_output, float fps, struct save_info_ *save_info)
 	{
 		bool verbose = false;
 		try
@@ -1122,6 +1131,18 @@ extern "C" {
 					cv::putText (*show_img, labelstr, pt_text, cv::FONT_HERSHEY_COMPLEX_SMALL, font_size, black_color, 2 * font_size, CV_AA);
 				}
 			}
+
+			float const font_size = show_img->rows / 1000.F;
+			cv::Point pt_fps_str(10, 50), pt_fps1(0, 0), pt_fps2(300, 75);
+			std::string fps_str("FPS: ");
+			fps_str += to_string_with_precision(fps, 1);
+
+			cv::Scalar black_color = CV_RGB (0, 0, 0);
+			cv::Scalar orange_color = CV_RGB (255, 140, 0);
+
+			cv::rectangle (*show_img, pt_fps1, pt_fps2, orange_color, CV_FILLED, 8, 0);   // filled
+			cv::putText   (*show_img, fps_str, pt_fps_str, cv::FONT_HERSHEY_COMPLEX_SMALL, font_size, black_color, 2 * font_size, CV_AA);
+
 			if (ext_output)
 			{
 				fflush (stdout);

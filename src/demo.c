@@ -116,7 +116,7 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
     demo_thresh = thresh;
     demo_ext_output = ext_output;
     demo_json_port = json_port;
-    printf("Demo\n");
+    printf("YOLOv3 Demo\n");
     net = parse_network_cfg_custom(cfgfile, 1, 1);    // set batch=1
     if(weightfile){
         load_weights(&net, weightfile);
@@ -184,7 +184,7 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
     int count = 0;
     if(!prefix && !dont_show){
         int full_screen = 0;
-        create_window_cv("Demo", full_screen, 1352, 1013);
+        create_window_cv("YOLOv3 Demo", full_screen, 1352, 1013);
     }
 
 
@@ -231,14 +231,17 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
                 send_json(local_dets, local_nboxes, l.classes, demo_names, frame_id, demo_json_port, timeout);
             }
 
-            draw_detections_cv_v3(show_img, local_dets, local_nboxes, demo_thresh, demo_names, demo_alphabet, demo_classes, demo_ext_output, save_info);
+            draw_detections_cv_v3(show_img, local_dets, local_nboxes, demo_thresh, demo_names, demo_alphabet, demo_classes, demo_ext_output, fps, save_info);
             free_detections(local_dets, local_nboxes);
 
             printf("\nFPS:%.1f\n", fps);
 
             if(!prefix){
-                if (!dont_show) {
-                    show_image_mat(show_img, "Demo");
+                if (!dont_show) 
+		{
+		    //char winname[1024];
+		    //sprintf(winname, "YOLOv3 Demo - %0.2f", fps); // bad idea
+                    show_image_mat(show_img, "YOLOv3 Demo");
                     int c = wait_key_cv(1);
                     if (c == 10) {
                         if (frame_skip == 0) frame_skip = 60;

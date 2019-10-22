@@ -1484,8 +1484,8 @@ void run_detector(int argc, char **argv)
     if (weights)
         if (strlen(weights) > 0)
             if (weights[strlen(weights) - 1] == 0x0d) weights[strlen(weights) - 1] = 0;
-for (int idx = 0 ; idx < 10 ; idx++)
-	printf("%s\n", argv[idx]);
+//for (int idx = 0 ; idx < 10 ; idx++)
+//	printf("%s\n", argv[idx]);
     char *filename = (argc > 6) ? argv[6] : 0;
     if (0 == strcmp(argv[2], "test")) test_detector(datacfg, cfg, weights, filename, thresh, hier_thresh, dont_show, ext_output, save_labels, outfile, letter_box);
     else if (0 == strcmp(argv[2], "train")) train_detector(datacfg, cfg, weights, gpus, ngpus, clear, dont_show, calc_map, mjpeg_port, show_imgs);
@@ -1505,13 +1505,18 @@ for (int idx = 0 ; idx < 10 ; idx++)
         struct save_info_ save_info;
 	save_info.min_prob_to_save		= find_int_arg(argc, argv, "-min_prob_to_save", 0);
 	char *saved_classes_str_with_commas	= find_char_arg(argc, argv, "-saved_classes", 0);
-	save_info.saved_classes			= split_string(saved_classes_str_with_commas, ',');
+	if (saved_classes_str_with_commas)
+		save_info.saved_classes		= split_string(saved_classes_str_with_commas, ',');
+	else
+		save_info.saved_classes		= 0;
 	sprintf(save_info.out_dir, "%s-images", filename);
 
 	save_info.n_saved_classes = 0;
 	printf("\nThe following classes (if detection probability is >= %d) will be saved:\n", save_info.min_prob_to_save);
 	while (true)
 	{
+		if (!save_info.saved_classes)
+			break;
 		if (save_info.saved_classes[save_info.n_saved_classes] != NULL)
 		{
 			printf("%s - ", save_info.saved_classes[save_info.n_saved_classes]);
