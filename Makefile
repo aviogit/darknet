@@ -69,7 +69,8 @@ endif
 
 CC=gcc
 CPP=g++
-NVCC=nvcc
+#NVCC=nvcc
+NVCC=/usr/local/cuda/bin/nvcc
 OPTS=-Ofast
 LDFLAGS= -lm -pthread -lboost_filesystem -lboost_system
 COMMON= -Iinclude/ -I3rdparty/stb/include
@@ -77,6 +78,7 @@ CFLAGS=-Wall -Wfatal-errors -Wno-unused-result -Wno-unknown-pragmas -fPIC
 
 ifeq ($(DEBUG), 1)
 #OPTS= -O0 -g
+#OPTS= -Og -g
 OPTS= -Og -g3
 COMMON+= -DDEBUG
 CFLAGS+= -DDEBUG
