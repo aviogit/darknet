@@ -1065,9 +1065,9 @@ std::string to_string_with_precision(const float val, const int n = 6)
 						{
 							std::string current_class (names[class_id]);
 							std::string current_class_to_save = save_info->saved_classes[idx];
-							//if (!strcmp (names[class_id], "dog"))
 
-							std::cout << current_class << " - " << current_class_to_save << " - " << prob << " - " << save_info->min_prob_to_save << std::endl;
+							if (verbose)
+								std::cout << current_class << " - " << current_class_to_save << " - " << prob << " - " << save_info->min_prob_to_save << std::endl;
 
 							if (current_class == current_class_to_save && prob >= save_info->min_prob_to_save)
 							{
