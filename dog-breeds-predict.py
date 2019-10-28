@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding: utf-8
 
 # ## Dog Breeds Classifier
@@ -14,6 +14,9 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 # -----------------------------
 #get_ipython().run_line_magic('matplotlib', 'notebook')
+
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="torch.nn.functional")
 
 import fastai
 
